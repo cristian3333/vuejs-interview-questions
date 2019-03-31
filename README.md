@@ -160,6 +160,13 @@ List of 300 VueJS Interview Questions
 |151| [What is mapState helper?](#what-is-mapstate-helper)|
 |152| [How do you combine local computed properties with mapState helper?](#how-do-you-combine-local-computed-properties-with-mapstate-helper)|
 |153| [Do you need to replace entire local state with vuex?](#do-you-need-to-replace-entire-local-state-with-vuex)|
+|154| [What are vuex getters?](#what-are-vuex-getters?)|
+|155| [What is a property style access?](#what-is-a-property-style-access)|
+|156| [What is a method style access?](#what-is-a-method-style-access)|
+|157| [What is mapGetter helper?](#what-is-mapgetter-helper)|
+|158| [What are mutations?](#what-are-mutations)|
+|159| [How do you commit with payload?](#how-do-you-commit-with-payload)|
+|160| [What is object style commit?](#what-is-object-style-commit)|
 
 1.  ### What is VueJS?
     **Vue.js** is an open-source, progressive Javascript framework for building user interfaces that aim to be incrementally adoptable. The core library of VueJS is focused on the `view layer` only, and is easy to pick up and integrate with other libraries or existing projects.
@@ -2820,3 +2827,119 @@ List of 300 VueJS Interview Questions
      ```
 153. ### Do you need to replace entire local state with vuex?
      No, if a piece of state strictly belongs to a single component, it could be just fine leaving it as local state. i.e, Eventhough vuex used in the application, it doesn't mean that you need to keep all the local state in vuex store. Other the code becomes more verbose and indirect although it makes your state mutations more explicit and debuggable.
+154. ### What are vuex getters??
+     Vuex getters acts as computed properties for stores to compute derived state based on store state. Similar to computed properties, a getter's result is cached based on its dependencies, and will only re-evaluate when some of its dependencies have changed.
+     Let's take a todo example which as completedTodos getter to find all completed todos,
+     ```javascript
+     const store = new Vuex.Store({
+       state: {
+         todos: [
+           { id: 1, text: 'Vue course', completed: true },
+           { id: 2, text: 'Vuex course', completed: false },
+           { id: 2, text: 'Vue Router course', completed: true }
+         ]
+       },
+       getters: {
+         completedTodos: state => {
+           return state.todos.filter(todo => todo.completed)
+         }
+       }
+     })
+     ```
+     **Note:**Getters receive state as first argument.
+155. ### What is a property style access?
+     You can access values of store's getter object(store.getters) as properties. This is known as property style access.
+     For example, you can access todo's status as a property,
+     ```javascript
+     store.getters.todosStatus
+     ```
+     The getters can be passed as 2nd argument for other getters. For example, you can derive completed todo's count based on their status as below,
+     ```javascript
+     getters: {
+       completedTodosCount: (state, getters) => {
+         return getters.todosStatus === 'completed'
+       }
+     }
+     ```
+     **Note:** The getters accessed as properties are cached as part of Vue's reactivity system.
+156. ### What is a method style access?
+     You can access store's state in a method style by passing arguments. For example, you can pass user id to find user profile information as below,
+     ```javascript
+     getters: {
+       getUserProfileById: (state) => (id) => {
+         return state.users.find(user => user.id === id)
+       }
+     }
+     ```
+     After that you can access it as a method call,
+     ```javascript
+     store.getters.getUserProfileById(111); {id: '111', name: 'John', age: 33}
+     ```
+157. ### What is mapGetter helper??
+     The mapGetters is a helper that simply maps store getters to local computed properties. For example, the usage of getters for todo app would be as below,
+     ```javascript
+     import { mapGetters } from 'vuex'
+
+     export default {
+       computed: {
+         // mix the getters into computed with object spread operator
+         ...mapGetters([
+           'completedTodos',
+           'todosCount',
+           // ...
+         ])
+       }
+     }
+     ```
+158. ### What are mutations?
+     Vuex mutations are similar to any events with a string `type` and a `handler`. The handler function is where we perform actual state modifications, and it will receive the state as the first argument.
+     For example, the counter example with increment mutation would be as below,
+     ```javascript
+     const store = new Vuex.Store({
+       state: {
+         count: 0
+       },
+       mutations: {
+         increment (state) {
+           // mutate state
+           state.count++
+         }
+       }
+     })
+     ```
+     You can't directly invoke mutation instead you need to call `store.commit` with its type. The above mutation would be triggered as folows
+     ```javascript
+     store.commit('increment')
+     ```
+159. ### How do you commit with payload?
+     You can also pass **payload** for the mutation as an additional argument to `store.commit`. For example, the counter mutation with payload object would be as below,
+     ```javascript
+     mutations: {
+       increment (state, payload) {
+         state.count += payload.increment
+       }
+     }
+     ```
+     And then you can trigger increment commit
+     ```javascript
+     store.commit('increment', {
+       increment: 20
+     })
+     ```
+     **Note:** You can also pass primitives as payload.
+160. ### What is object style commit?
+     You can also commit a mutation is by directly using an object that has a **type** property.
+     ```javascript
+     store.commit({
+       type: 'increment',
+       value: 20
+     })
+     ```
+     Now the entire object will be passed as the payload to mutation handlers(i.e, without any changes to handler signature).
+     ```javascript
+     mutations: {
+       increment (state, payload) {
+         state.count += payload.value
+       }
+     }
+     ```
